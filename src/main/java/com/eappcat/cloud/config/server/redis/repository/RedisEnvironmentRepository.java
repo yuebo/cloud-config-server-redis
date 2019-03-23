@@ -49,25 +49,29 @@ public class RedisEnvironmentRepository implements EnvironmentRepository, Ordere
         Collections.reverse(envs);
         for (String app : applications) {
             for (String env : envs) {
-                String yamlSource = this.redisTemplate.<String,String>opsForHash().get(app , env);
-                if(yamlSource==null){
-                    continue;
-                }
-                YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
-                InputStream inputStream=new ByteArrayInputStream(yamlSource.getBytes());
-                try {
-                    yaml.setResources(new InputStreamResource(inputStream));
-                    Properties next= yaml.getObject();
-                    if (!next.isEmpty()) {
-                        environment.add(new PropertySource(app + "-" + env, next));
-                    }
-                }finally {
-                    IOUtils.closeQuietly(inputStream);
-                }
+                addPropertySource(environment, app, env);
 
             }
         }
         return environment;
+    }
+
+    private void addPropertySource(Environment environment, String app, String env) {
+        String yamlSource = this.redisTemplate.<String,String>opsForHash().get(app , env);
+        if(yamlSource==null){
+            return;
+        }
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        InputStream inputStream=new ByteArrayInputStream(yamlSource.getBytes());
+        try {
+            yaml.setResources(new InputStreamResource(inputStream));
+            Properties next= yaml.getObject();
+            if (!next.isEmpty()) {
+                environment.add(new PropertySource(app + "-" + env, next));
+            }
+        }finally {
+            IOUtils.closeQuietly(inputStream);
+        }
     }
 
     @Override
