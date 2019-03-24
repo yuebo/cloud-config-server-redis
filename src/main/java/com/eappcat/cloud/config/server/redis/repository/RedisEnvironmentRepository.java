@@ -57,7 +57,7 @@ public class RedisEnvironmentRepository implements EnvironmentRepository, Ordere
     }
 
     private void addPropertySource(Environment environment, String app, String env) {
-        String yamlSource = this.redisTemplate.<String,String>opsForHash().get(app , env);
+        String yamlSource = this.redisTemplate.<String,String>opsForHash().get("configServer" , app+"-"+env);
         if(yamlSource==null){
             return;
         }
